@@ -4,8 +4,10 @@
   "description": "Smart contracts for the moon platform",
   "scripts": {
     "clean": "rimraf dist",
-    "build": "run-s clean pack",
-    "build:dev": "run-s clean pack:dev",
+    "copy:package": "copyfiles package.json ./dist",
+    "copy:README": "copyfiles README.md ./dist",
+    "build": "run-s clean pack copy:package copy:README",
+    "build:dev": "run-s clean pack:dev copy:package copy:README",
     "pack:dev": "webpack --mode=development",
     "pack": "webpack",
     "compile": "tsc"
