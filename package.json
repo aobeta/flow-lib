@@ -2,6 +2,10 @@
   "name": "@aobeta/flow-lib",
   "version": "0.0.1",
   "description": "Smart contracts for the moon platform",
+  "repository": {
+    "type": "git",
+    "url": "https://https://github.com/aobeta/flow-lib.git"
+  },
   "scripts": {
     "clean": "rimraf dist",
     "copy:package": "copyfiles package.json ./dist",
