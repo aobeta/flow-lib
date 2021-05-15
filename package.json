@@ -1,0 +1,37 @@
+{
+  "name": "@aobeta/flow-lib",
+  "version": "0.0.1",
+  "description": "Smart contracts for the moon platform",
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "run-s clean pack",
+    "build:dev": "run-s clean pack:dev",
+    "pack:dev": "webpack --mode=development",
+    "pack": "webpack",
+    "compile": "tsc"
+  },
+  "author": "Anthony Obeta",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@onflow/fcl": "^0.0.69",
+    "@onflow/sdk": "^0.0.45",
+    "@onflow/types": "^0.0.4",
+    "elliptic": "^6.5.4",
+    "sha3": "^2.1.4"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.14.2",
+    "@babel/parser": "^7.14.2",
+    "@stavalfi/babel-plugin-module-resolver-loader": "^1.4.0",
+    "@types/elliptic": "^6.4.12",
+    "babel-loader": "^8.2.2",
+    "copyfiles": "^2.4.1",
+    "npm-run-all": "^4.1.5",
+    "raw-loader": "^4.0.2",
+    "rimraf": "^3.0.2",
+    "ts-loader": "^9.1.2",
+    "typescript": "^4.2.4",
+    "webpack": "^5.37.0",
+    "webpack-cli": "^4.7.0"
+  }
+}

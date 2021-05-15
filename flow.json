@@ -1,0 +1,31 @@
+{
+	"emulators": {
+		"default": {
+			"port": 3569,
+			"serviceAccount": "emulator-account"
+		}
+	},
+	"contracts": {
+		"TheMoonNFTContract": "./cadence/contracts/TheMoonNFTContract.cdc"
+	},
+	"networks": {
+		"emulator": "127.0.0.1:3569",
+		"mainnet": "access.mainnet.nodes.onflow.org:9000",
+		"testnet": "access.devnet.nodes.onflow.org:9000"
+	},
+	"accounts": {
+		"emulator-account": {
+			"address": "f8d6e0586b0a20c7",
+			"keys": "30e99aed97fe2135cfb35c89731543410d605612959cf460ff1efd67632bc5c6",
+			"privateKey": "a130c1db05357578c8d70b8bdf029756991340e5d57d4bfd611f143cfdfcbf7b",
+			"chain": "flow-emulator",
+			"sigAlgorithm": "ECDSA_P256",
+			"hashAlgorithm": "SHA3_256"
+		}
+	},
+	"deployments": {
+		"emulator": {
+			"emulator-account" : ["TheMoonNFTContract"]
+		}
+	}
+}
