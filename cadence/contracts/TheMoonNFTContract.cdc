@@ -1,14 +1,20 @@
 pub contract TheMoonNFTContract {
+
     // Path for the receiver capability
     pub let NFT_RECEIVER_PUBLIC_PATH: PublicPath
+    // Path for the QueryMintedCollection
+    pub let QUERY_MINTED_COLLECTION_PATH: PublicPath
     // Path for seller catalog capability
     pub let SELLER_CATALOG_PATH: PublicPath
+
     // Path for the nft collection resource
     pub let COLLECTION_STORAGE_PATH: StoragePath
     // Path for minter resource
     pub let MINTER_STORAGE_PATH: StoragePath
     // Path for platform seller resource
     pub let SINGLE_PLATFORM_SELLER_PATH: StoragePath
+    // Path for AdminMintCollection resource
+    pub let ADMIN_MINT_COLLECTION_PATH: StoragePath
 
 
 
@@ -310,10 +316,6 @@ pub contract TheMoonNFTContract {
         }
     }
 
-    pub fun createEmptyCollection(): @Collection {
-        return <- create Collection()
-    }
-
     pub resource NFTMinter {
         access(self) var nftIdCount: UInt64
         access(self) var packIdCount: UInt64
@@ -366,12 +368,112 @@ pub contract TheMoonNFTContract {
         }
     }
 
+    pub resource interface QueryMintedCollection {
+        pub fun getAllGroups() : [NftGroupData]
+        pub fun getGroupInfo(_ groupId: String) : NftGroupData
+        pub fun getAllIds() : [UInt64]
+    }
+
+    pub resource AdminMintedCollection : QueryMintedCollection {
+        pub let groupMetadata : {String : MoonNFTMetadata}
+        pub let groupNftIds : { String : [UInt64] }
+        pub let nfts : @{ UInt64 : MoonNFT }
+        pub let nftIds : [MoonNFTMetadata]
+
+        pub let creatorToGroupMap : { String : String}
+        pub let creatorProfileToGroupMap : { String : String }
+
+        init () {
+            self.groupMetadata = {}
+            self.groupNftIds = {}
+            self.nfts <- {}
+            self.nftIds = []
+
+            self.creatorToGroupMap = {}
+            self.creatorProfileToGroupMap = {}
+        }
+
+        pub fun depositGroup(_ groupId: String, _ groupMetadata: MoonNFTMetadata, _ nfts: @[MoonNFT]){
+            self.groupMetadata[groupId] = groupMetadata
+            let nftIds : [UInt64] = []
+
+            while nfts.length > 0 {
+                let nft <- nfts.removeLast()
+                let id = nft.id
+                nftIds.append(id)
+                self.nftIds.append(nft.getMetaData())
+
+                let nullNft <- self.nfts.insert(key: nft.id, <- nft)
+
+                destroy nullNft
+            }
+
+            self.groupNftIds[groupId] = nftIds
+            self.creatorToGroupMap[groupMetadata.originalContentCreator] = groupId;
+            self.creatorProfileToGroupMap[groupMetadata.creatorProfile] = groupId;
+
+            destroy nfts
+        }
+
+        pub fun getAllIds() : [UInt64] {
+            return self.nfts.keys
+        }
+
+        pub fun getAllGroups() : [NftGroupData]{
+            let groupData: [NftGroupData] = []
+
+            for groupId in self.groupNftIds.keys {
+                groupData.append(self.getGroupInfo(groupId))
+            }
+
+            return groupData
+        }
+
+        pub fun getGroupInfo(_ groupId: String) : NftGroupData {
+            pre {
+                self.groupNftIds[groupId] != nil : "No Nfts associated with group"
+                self.groupMetadata[groupId] != nil : "No Metadata associated with group"
+            }
+
+            let nftIdGroup = self.groupNftIds[groupId]!
+
+            return NftGroupData(
+                groupId,
+                nftIdGroup,
+                self.groupMetadata[groupId]!
+            )
+        }
+
+        destroy () {
+            destroy self.nfts
+        }
+    }
+
+    pub struct NftGroupData {
+        pub let groupId : String
+        pub let nftIds : [UInt64]
+        pub let metadata : MoonNFTMetadata
+
+        init (_ groupId: String, _ nftIds: [UInt64], _ metadata: MoonNFTMetadata) {
+            self.groupId = groupId
+            self.nftIds = nftIds
+            self.metadata = metadata
+        }
+    }
+
+    pub fun createEmptyCollection(): @Collection {
+        return <- create Collection()
+    }
+
     init() {
         self.NFT_RECEIVER_PUBLIC_PATH = /public/NFTReceiver
         self.SELLER_CATALOG_PATH = /public/SellerCatalog
+        self.QUERY_MINTED_COLLECTION_PATH = /public/QueryMintedCollection
+
         self.COLLECTION_STORAGE_PATH = /storage/NFTCollection
         self.MINTER_STORAGE_PATH = /storage/NFTMinter
         self.SINGLE_PLATFORM_SELLER_PATH = /storage/PlatformSeller
+        self.ADMIN_MINT_COLLECTION_PATH = /storage/AdminMintedCollection
 
         // setup Minting and collecting infrastructure
         self.account.save(<- create Collection(), to: self.COLLECTION_STORAGE_PATH)
@@ -381,6 +483,10 @@ pub contract TheMoonNFTContract {
         // setup seller infrastructure
         self.account.save(<- create SinglePlatformSeller(), to: self.SINGLE_PLATFORM_SELLER_PATH)
         self.account.link<&{SellerCatalog}>(self.SELLER_CATALOG_PATH, target: self.SINGLE_PLATFORM_SELLER_PATH)
+
+        // setup admin mint collection resource
+        self.account.save(<- create AdminMintedCollection(), to: self.ADMIN_MINT_COLLECTION_PATH)
+        self.account.link<&{QueryMintedCollection}>(self.QUERY_MINTED_COLLECTION_PATH, target: self.ADMIN_MINT_COLLECTION_PATH)
     }
 }
 

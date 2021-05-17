@@ -1,11 +1,18 @@
 import TheMoonNFTContract from 0xf8d6e0586b0a20c7
 
-transaction (mediaUrl: String, creator: String, creatorProfile: String, metadata: {String : String}){
-    let platformSeller: &TheMoonNFTContract.SinglePlatformSeller
+transaction (
+    mediaUrl: String,
+    creator: String,
+    creatorProfile: String,
+    metadata: {String : String},
+    groupId: String,
+    count: Int
+){
+    let mintCollection: &TheMoonNFTContract.AdminMintedCollection
     let minterRef: &TheMoonNFTContract.NFTMinter
 
     prepare(principalMoonAccount: AuthAccount) {
-        self.platformSeller = principalMoonAccount.borrow<&TheMoonNFTContract.SinglePlatformSeller>(from: TheMoonNFTContract.SINGLE_PLATFORM_SELLER_PATH) ??
+        self.mintCollection = principalMoonAccount.borrow<&TheMoonNFTContract.AdminMintedCollection>(from: TheMoonNFTContract.ADMIN_MINT_COLLECTION_PATH) ??
             panic("Could not borrow platform seller")
 
         self.minterRef = principalMoonAccount.borrow<&TheMoonNFTContract.NFTMinter>(from: TheMoonNFTContract.MINTER_STORAGE_PATH) ??
@@ -13,18 +20,35 @@ transaction (mediaUrl: String, creator: String, creatorProfile: String, metadata
     }
 
     execute {
-        let nftData = TheMoonNFTContract.MoonNFTMetadata(
-            nil,
-            mediaUrl,
-            creator: creator,
-            profile: creatorProfile,
-            metadata: metadata
+        let groupOfNFts : [TheMoonNFTContract.MoonNFTMetadata] = []
+        var i = count
+        while i > 0 {
+            let newMetadata = metadata
+            newMetadata["totalEditions"] = count.toString()
+            newMetadata["edition"] = i.toString()
+
+            let nftData = TheMoonNFTContract.MoonNFTMetadata(
+                nil,
+                mediaUrl,
+                creator: creator,
+                profile: creatorProfile,
+                metadata: newMetadata
+            )
+            i = i - 1
+        }
+
+        let groupMetadata =  TheMoonNFTContract.MoonNFTMetadata(
+                nil,
+                mediaUrl,
+                creator: creator,
+                profile: creatorProfile,
+                metadata: metadata
         )
 
-        let newNFT <- self.minterRef.mintNFT(nftData)
-        log("New MoonNFT minted : ".concat(newNFT.id.toString()))
+        let nfts <- self.minterRef.bulkMintNft(groupOfNFts)
+        log("All Nft's Minted")
 
-        self.platformSeller.depositNft(<- newNFT)
+        self.mintCollection.depositGroup(groupId, groupMetadata, <- nfts)
         log("Minted MoonNFT deposited in Platform Seller")
     }
 }
