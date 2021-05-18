@@ -36,7 +36,10 @@ const serverConfig = {
       },
       {
         test: /\.cdc$/i,
-        use: 'raw-loader',
+        use: [
+          { loader : 'raw-loader' },
+          { loader : path.resolve('./replaceImport.js') }
+        ]
       },
     ],
   },

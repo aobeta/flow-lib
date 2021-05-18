@@ -21,11 +21,20 @@
 			"chain": "flow-emulator",
 			"sigAlgorithm": "ECDSA_P256",
 			"hashAlgorithm": "SHA3_256"
+		},
+		"testnet-account": {
+			"address": "c875a14b59533028",
+			"keys": "8b1150fcfd1e2d75d4155f6e59c1f456d7efeefc5ad4b6137bcf833371953cd6",
+			"sigAlgorithm": "ECDSA_P256",
+			"hashAlgorithm": "SHA3_256"
 		}
 	},
 	"deployments": {
 		"emulator": {
 			"emulator-account" : ["TheMoonNFTContract"]
+		},
+		"testnet" : {
+			"testnet-account" : ["TheMoonNFTContract"]
 		}
 	}
 }

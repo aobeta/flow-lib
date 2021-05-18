@@ -21,7 +21,7 @@ pub contract Foo {
 
 const CODE = Buffer.from(contract, "utf8").toString("hex")
 
-console.log("BEFORE SEND : ");
+console.log("BEFORE SEND : ", sdk);
 
 function hash(message) {
     const sha = new sha3.SHA3(256);
@@ -57,72 +57,73 @@ const buildAuthorization = () => (
     },
   });
 
-const resolveProposerSequenceNumber = ({ node }) => async (ix) => {
+// const resolveProposerSequenceNumber = ({ node }) => async (ix) => {
 
-    const response = await sdk.send(await sdk.build([
-      sdk.getAccount(ix.accounts[ix.proposer].addr)
-    ]), { node })
-    const decoded = await sdk.decode(response)
+//     const response = await sdk.send(await sdk.build([
+//       sdk.getAccount(ix.accounts[ix.proposer].addr)
+//     ]), { node })
+//     const decoded = await sdk.decode(response)
 
-    ix.accounts[ix.proposer].sequenceNum = decoded.keys[ix.accounts[ix.proposer].keyId].sequenceNumber
+//     ix.accounts[ix.proposer].sequenceNum = decoded.keys[ix.accounts[ix.proposer].keyId].sequenceNumber
 
-    return ix;
-}
+//     return ix;
+// }
 
-fcl
-  .send([
-    fcl.script`
-    pub fun main(address: Address) {
-        let account = getAccount(address)
-        log(account.storageUsed)
-        log(account.storageCapacity)
-    }
-    `,
-    fcl.args([
-      fcl.arg( "0xf8d6e0586b0a20c7", t.Address)
-    ])
-  ])
-  .then(fcl.decode)
-  .then(result => console.log('Result :: ', result))
+// fcl
+//   .send([
+//     fcl.script`
+//     pub fun main(address: Address) {
+//         let account = getAccount(address)
+//         log(account.storageUsed)
+//         log(account.storageCapacity)
+//     }
+//     `,
+//     fcl.args([
+//       fcl.arg( "0xf8d6e0586b0a20c7", t.Address)
+//     ])
+//   ])
+//   .then(fcl.decode)
+//   .then(result => console.log('Result :: ', result))
 
 
-sdk.build([
-  sdk.transaction`
-    transaction {
-        let account: AuthAccount
+// sdk.build([
+//   sdk.transaction`
+//     transaction {
+//         let account: AuthAccount
 
-        prepare(acct: AuthAccount) {
-            self.account = acct
-        }
+//         prepare(acct: AuthAccount) {
+//             self.account = acct
+//         }
 
-        post {
-            self.account != nil : "Account was not initialized"
-        }
-    }
-  `,
-  sdk.proposer(buildAuthorization()),
-  sdk.payer(buildAuthorization()),
-  sdk.authorizations([buildAuthorization()]),
-])
-.then(build => sdk.pipe(build, [
-    sdk.resolveParams,
-    sdk.resolveAccounts,
-    sdk.resolveRefBlockId({ node: "http://localhost:8080" }),
-    resolveProposerSequenceNumber({ node: "http://localhost:8080" }),
-    sdk.resolveSignatures,
-]))
-.then((pipedBuild) => {
-    console.log('piped build :: ', pipedBuild)
-    return sdk.send(pipedBuild, { node: "http://localhost:8080" } )
-})
-.then(txId => {
-    console.log(`Transaction Id : `, txId)
-    return fcl.tx(txId).onceSealed();
-})
-.then(tx => console.log('Transaction Sealed :: ', tx))
-.catch(error => console.error(error))
+//         post {
+//             self.account != nil : "Account was not initialized"
+//         }
+//     }
+//   `,
+//   sdk.proposer(buildAuthorization()),
+//   sdk.payer(buildAuthorization()),
+//   sdk.authorizations([buildAuthorization()]),
+// ])
+// .then(build => sdk.pipe(build, [
+//     sdk.resolveParams,
+//     sdk.resolveAccounts,
+//     sdk.resolveRefBlockId({ node: "http://localhost:8080" }),
+//     resolveProposerSequenceNumber({ node: "http://localhost:8080" }),
+//     sdk.resolveSignatures,
+// ]))
+// .then((pipedBuild) => {
+//     console.log('piped build :: ', pipedBuild)
+//     return sdk.send(pipedBuild, { node: "http://localhost:8080" } )
+// })
+// .then(txId => {
+//     console.log(`Transaction Id : `, txId)
+//     return fcl.tx(txId).onceSealed();
+// })
+// .then(tx => console.log('Transaction Sealed :: ', tx))
+// .catch(error => console.error(error))
 
 
 // 🔴️ Store private key safely and don't share with anyone!
-// Private Key      5b6132018902ee501e708567a5c074a6a77b343d693da11f8dc75c7a060dfef2
-// Public Key       416302ee635d6bf9a5e7a2a3e32b1745f11fa732827a4c44a04036947372dbd41db1742965c4ea0ecaf1f967496fcac1045f062cc068e14dbb822d5d92abd170
+// Private Key 	 8b1150fcfd1e2d75d4155f6e59c1f456d7efeefc5ad4b6137bcf833371953cd6
+// Public Key 	 041240a50c93ff582ab7c7249c28b8ec12bc2b2d09576e1bbc6ec0be42c43147e684a2820636021d89c3ff22f86bf6959314ac80f9370dbbecfc0f2e95ac3e22
+
