@@ -34,6 +34,8 @@ transaction (
                 profile: creatorProfile,
                 metadata: newMetadata
             )
+
+            groupOfNFts.append(nftData)
             i = i - 1
         }
 
@@ -46,6 +48,11 @@ transaction (
         )
 
         let nfts <- self.minterRef.bulkMintNft(groupOfNFts)
+
+        if (nfts.length == 0) {
+            panic("No NFT's were minted")
+        }
+
         log("All Nft's Minted")
 
         self.mintCollection.depositGroup(groupId, groupMetadata, <- nfts)

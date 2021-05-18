@@ -321,8 +321,8 @@ pub contract TheMoonNFTContract {
         access(self) var packIdCount: UInt64
 
         init() {
-            self.nftIdCount = 1
-            self.packIdCount = 1
+            self.nftIdCount = 0
+            self.packIdCount = 0
         }
 
         access(self) fun incrementNftIdCount() {
@@ -347,11 +347,17 @@ pub contract TheMoonNFTContract {
         }
 
         pub fun bulkMintNft (_ nftsToMint: [MoonNFTMetadata]): @[MoonNFT] {
+            pre {
+                nftsToMint.length != 0 : "[NFTMinter] No NFT's that we can mint"
+            }
+
             let mintedNfts : @[MoonNFT] <- []
 
             for nftData in nftsToMint {
                 let newNFT <- self.mintNFT(nftData)
+
                 mintedNfts.append(<- newNFT)
+
             }
 
             return <- mintedNfts
@@ -394,14 +400,16 @@ pub contract TheMoonNFTContract {
         }
 
         pub fun depositGroup(_ groupId: String, _ groupMetadata: MoonNFTMetadata, _ nfts: @[MoonNFT]){
+            pre {
+                nfts.length > 0 : "No NFT's to deposit"
+            }
+
             self.groupMetadata[groupId] = groupMetadata
-            let nftIds : [UInt64] = []
+            var nftIds : [UInt64] = []
 
             while nfts.length > 0 {
                 let nft <- nfts.removeLast()
-                let id = nft.id
-                nftIds.append(id)
-                self.nftIds.append(nft.getMetaData())
+                nftIds.append(nft.id)
 
                 let nullNft <- self.nfts.insert(key: nft.id, <- nft)
 
