@@ -47,6 +47,10 @@ transaction (
                 metadata: metadata
         )
 
+        if (groupOfNFts.length == 0) {
+            panic("Metadata Array is empty")
+        }
+
         let nfts <- self.minterRef.bulkMintNft(groupOfNFts)
 
         if (nfts.length == 0) {

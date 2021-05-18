@@ -1,5 +1,18 @@
-import mintMoonNft from "./mintMoonNFT";
+
+import mintMoonNft from "./mintMoonNft";
+import {config} from "@onflow/fcl";
+
+export interface FlowConfig {
+    contractAddress: string;
+    accessNode: string;
+}
+
+export const initFlowConfig = (options: FlowConfig) => {
+    config()
+        .put("accessNode.api", options.accessNode)
+        .put("0xMOON_NFT_CONTRACT", options.contractAddress)
+}
 
 export {
-    mintMoonNft
+    mintMoonNft,
 }

@@ -348,7 +348,7 @@ pub contract TheMoonNFTContract {
 
         pub fun bulkMintNft (_ nftsToMint: [MoonNFTMetadata]): @[MoonNFT] {
             pre {
-                nftsToMint.length != 0 : "[NFTMinter] No NFT's that we can mint"
+                nftsToMint.length > 0 : "[NFTMinter] No NFT's that we can mint"
             }
 
             let mintedNfts : @[MoonNFT] <- []
