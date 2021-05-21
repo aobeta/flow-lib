@@ -1,5 +1,7 @@
 
 import mintMoonNft from "./mintMoonNft";
+import publishNftPack from './publishNftPack';
+
 import {config} from "@onflow/fcl";
 
 export interface FlowConfig {
@@ -15,4 +17,5 @@ export const initFlowConfig = (options: FlowConfig) => {
 
 export {
     mintMoonNft,
+    publishNftPack
 }
