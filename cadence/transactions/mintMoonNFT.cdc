@@ -13,21 +13,21 @@ transaction (
 
     prepare(principalMoonAccount: AuthAccount) {
         self.mintCollection = principalMoonAccount.borrow<&TheMoonNFTContract.AdminMintedCollection>(from: TheMoonNFTContract.ADMIN_MINT_COLLECTION_PATH) ??
-            panic("Could not borrow platform seller")
+            panic("Could not borrow minted collection")
 
         self.minterRef = principalMoonAccount.borrow<&TheMoonNFTContract.NFTMinter>(from: TheMoonNFTContract.MINTER_STORAGE_PATH) ??
             panic("Could not borrow nft minter")
     }
 
     execute {
-        let groupOfNFts : [TheMoonNFTContract.MoonNFTMetadata] = []
+        let groupOfNFts : [TheMoonNFTContract.MoonNftData] = []
         var i = count
         while i > 0 {
             let newMetadata = metadata
             newMetadata["totalEditions"] = count.toString()
             newMetadata["edition"] = i.toString()
 
-            let nftData = TheMoonNFTContract.MoonNFTMetadata(
+            let nftData = TheMoonNFTContract.MoonNftData(
                 nil,
                 mediaUrl,
                 creator: creator,
@@ -39,7 +39,7 @@ transaction (
             i = i - 1
         }
 
-        let groupMetadata =  TheMoonNFTContract.MoonNFTMetadata(
+        let groupMetadata =  TheMoonNFTContract.MoonNftData(
                 nil,
                 mediaUrl,
                 creator: creator,

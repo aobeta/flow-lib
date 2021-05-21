@@ -18,14 +18,20 @@ pub contract TheMoonNFTContract {
 
 
 
-    pub struct MoonNFTMetadata {
+    pub struct MoonNftData {
         pub let id: UInt64?
         pub let originalContentCreator: String
         pub let creatorProfile: String
         pub let mediaUrl : String
         pub let metadata: { String : String }
 
-        init (_ id: UInt64?, _ mediaUrl: String, creator originalContentCreator: String, profile creatorProfile: String, metadata: { String : String }){
+        init (
+            _ id: UInt64?,
+            _ mediaUrl: String,
+            creator originalContentCreator: String,
+            profile creatorProfile: String,
+            metadata: { String : String }
+        ){
             self.id = id
             self.originalContentCreator = originalContentCreator
             self.mediaUrl = mediaUrl
@@ -34,17 +40,25 @@ pub contract TheMoonNFTContract {
         }
     }
 
-    pub struct MoonNFTPackMetadata {
+    pub struct MoonNftPackData {
         pub let id: UInt64
+        pub let previewMediaUrl: String
         pub let collectionNftIds : [UInt64]
-        pub let creator: String
-        pub let creatorProfile: String
+        pub let creator: String?
+        pub let creatorProfile: String?
 
-        init(_ id: UInt64, _ nftIds: [UInt64], creator: String, profile: String) {
+        init(
+            _ id: UInt64,
+            _ nftIds: [UInt64],
+            _ previewMediaUrl: String,
+            creator: String?,
+            profile: String?
+        ) {
             self.id = id
             self.creator = creator
             self.collectionNftIds = nftIds
             self.creatorProfile = profile
+            self.previewMediaUrl = previewMediaUrl
         }
     }
 
@@ -69,8 +83,8 @@ pub contract TheMoonNFTContract {
             self.creatorProfile = creatorProfile
         }
 
-        pub fun getMetaData () : MoonNFTMetadata {
-            return MoonNFTMetadata(
+        pub fun getMetaData () : MoonNftData {
+            return MoonNftData(
                 self.id,
                 self.mediaUrl,
                 creator: self.originalContentCreator,
@@ -82,26 +96,32 @@ pub contract TheMoonNFTContract {
 
     pub resource MoonNFTPack {
         pub let id: UInt64
+        pub let previewMediaUrl: String
         pub let pack : @[MoonNFT]
-        pub let originalContentCreator: String
-        pub let creatorProfile: String
+
+        // made this optional in case we decide to mix nfts from different creators
+        // into one pack
+        pub let originalContentCreator: String?
+        pub let creatorProfile: String?
 
 
         init (
             _ packId: UInt64,
             _ initialPack : @[MoonNFT],
-            creator originalContentCreator : String,
-            creatorProfile: String
+            _ previewMediaUrl: String,
+            creator originalContentCreator : String?,
+            creatorProfile: String?
         ) {
             self.pack <- initialPack
             self.originalContentCreator = originalContentCreator
             self.creatorProfile = creatorProfile
             self.id = packId
+            self.previewMediaUrl = previewMediaUrl
         }
 
         // TODO improve by generating the metadata in init, then storing as variable,
         // then simply return reference to metadata
-        pub fun getMetaData(): MoonNFTPackMetadata {
+        pub fun getMetaData(): MoonNftPackData {
             let nftIds : [UInt64] = []
 
             var i = 0
@@ -113,7 +133,12 @@ pub contract TheMoonNFTContract {
                 i = i + 1
             }
 
-            return MoonNFTPackMetadata(self.id, nftIds, creator: self.originalContentCreator, profile: self.creatorProfile)
+            return MoonNftPackData(
+                self.id,
+                nftIds,
+                self.previewMediaUrl,
+                creator: self.originalContentCreator,
+                profile: self.creatorProfile)
         }
 
         destroy () {
@@ -170,17 +195,17 @@ pub contract TheMoonNFTContract {
     }
 
     pub resource interface SellerCatalog {
-        pub let nftsByCreatorProfile: {String: [MoonNFTMetadata]}
-        pub let packsByCreatorProfile: {String: [MoonNFTPackMetadata]}
+        pub let nftsByCreatorProfile: {String: [MoonNftData]}
+        pub let packsByCreatorProfile: {String: [MoonNftPackData]}
 
-        pub let nftsByCreator: {String: [MoonNFTMetadata]}
-        pub let packsByCreator: {String: [MoonNFTPackMetadata]}
+        pub let nftsByCreator: {String: [MoonNftData]}
+        pub let packsByCreator: {String: [MoonNftPackData]}
 
-        pub fun getAllPacks(): [MoonNFTPackMetadata]
+        pub fun getAllPacks(): [MoonNftPackData]
         pub fun getTotalPackCount(): Int
         pub fun packExists(id: UInt64): Bool
 
-        pub fun getAllNFTs(): [MoonNFTMetadata]
+        pub fun getAllNFTs(): [MoonNftData]
         pub fun getTotalNFTCount(): Int
         pub fun nftExists(id: UInt64): Bool
     }
@@ -189,11 +214,11 @@ pub contract TheMoonNFTContract {
         pub let nftPacksForSale: @{UInt64 : MoonNFTPack}
         pub let nftsForSale: @{UInt64 : MoonNFT}
 
-        pub let nftsByCreatorProfile: {String: [MoonNFTMetadata]}
-        pub let packsByCreatorProfile: {String: [MoonNFTPackMetadata]}
+        pub let nftsByCreatorProfile: {String: [MoonNftData]}
+        pub let packsByCreatorProfile: {String: [MoonNftPackData]}
 
-        pub let nftsByCreator: {String: [MoonNFTMetadata]}
-        pub let packsByCreator: {String: [MoonNFTPackMetadata]}
+        pub let nftsByCreator: {String: [MoonNftData]}
+        pub let packsByCreator: {String: [MoonNftPackData]}
 
         init() {
             self.nftPacksForSale <- {}
@@ -207,8 +232,8 @@ pub contract TheMoonNFTContract {
         }
 
         // TODO paginate
-        pub fun getAllPacks(): [MoonNFTPackMetadata] {
-            let packs: [MoonNFTPackMetadata] = []
+        pub fun getAllPacks(): [MoonNftPackData] {
+            let packs: [MoonNftPackData] = []
 
             for packId in self.nftPacksForSale.keys {
                 let oldPack <- self.nftPacksForSale.remove(key: packId)
@@ -228,8 +253,8 @@ pub contract TheMoonNFTContract {
             return self.nftPacksForSale.containsKey(id)
         }
 
-        pub fun getAllNFTs(): [MoonNFTMetadata] {
-            let nfts: [MoonNFTMetadata] = []
+        pub fun getAllNFTs(): [MoonNftData] {
+            let nfts: [MoonNftData] = []
 
             for nftId in self.nftPacksForSale.keys {
                 let nft <- self.nftsForSale.remove(key: nftId)
@@ -269,19 +294,23 @@ pub contract TheMoonNFTContract {
         }
 
         pub fun depositPack(_ pack: @MoonNFTPack) {
-            if !self.packsByCreator.containsKey(pack.originalContentCreator) {
-                self.packsByCreator.insert(key: pack.originalContentCreator, [])
+            if (pack.originalContentCreator != nil) {
+                if (!self.packsByCreator.containsKey(pack.originalContentCreator!)) {
+                    self.packsByCreator.insert(key: pack.originalContentCreator!, [])
+                }
+
+                let creatorCollection = &self.packsByCreator[pack.originalContentCreator!] as &[MoonNftPackData]
+                creatorCollection.append(pack.getMetaData())
             }
 
-            if !self.packsByCreatorProfile.containsKey(pack.creatorProfile) {
-                self.packsByCreatorProfile.insert(key: pack.creatorProfile, [])
+            if (pack.creatorProfile != nil) {
+                if (!self.packsByCreatorProfile.containsKey(pack.creatorProfile!)) {
+                    self.packsByCreatorProfile.insert(key: pack.creatorProfile!, [])
+                }
+
+                let creatorProfileCollection = &self.packsByCreatorProfile[pack.creatorProfile!] as &[MoonNftPackData]
+                creatorProfileCollection.append(pack.getMetaData())
             }
-
-            let creatorCollection = &self.packsByCreator[pack.originalContentCreator]! as &[MoonNFTPackMetadata]
-            let creatorProfileCollection = &self.packsByCreatorProfile[pack.creatorProfile]! as &[MoonNFTPackMetadata]
-
-            creatorCollection.append(pack.getMetaData())
-            creatorProfileCollection.append(pack.getMetaData())
 
             let old <- self.nftPacksForSale.insert(key: pack.id, <- pack)
 
@@ -333,7 +362,7 @@ pub contract TheMoonNFTContract {
             self.packIdCount = self.packIdCount + 1 as UInt64
         }
 
-        pub fun mintNFT (_ nftData: MoonNFTMetadata ): @MoonNFT {
+        pub fun mintNFT (_ nftData: MoonNftData ): @MoonNFT {
             self.incrementNftIdCount()
             var newNFT <- create MoonNFT(
                 self.nftIdCount,
@@ -346,7 +375,7 @@ pub contract TheMoonNFTContract {
             return <-newNFT
         }
 
-        pub fun bulkMintNft (_ nftsToMint: [MoonNFTMetadata]): @[MoonNFT] {
+        pub fun bulkMintNft (_ nftsToMint: [MoonNftData]): @[MoonNFT] {
             pre {
                 nftsToMint.length > 0 : "[NFTMinter] No NFT's that we can mint"
             }
@@ -363,13 +392,14 @@ pub contract TheMoonNFTContract {
             return <- mintedNfts
         }
 
-        pub fun createNFTPack (_ packOfNfts: @[MoonNFT], _ metadata: MoonNFTPackMetadata) : @MoonNFTPack {
+        pub fun createNFTPack (_ packOfNfts: @[MoonNFT], _ data: MoonNftPackData) : @MoonNFTPack {
             self.incrementPackIdCount()
             return <- create MoonNFTPack(
                 self.packIdCount,
                 <- packOfNfts,
-                creator: metadata.creator,
-                creatorProfile: metadata.creatorProfile
+                data.previewMediaUrl,
+                creator: data.creator,
+                creatorProfile: data.creatorProfile
             )
         }
     }
@@ -381,10 +411,9 @@ pub contract TheMoonNFTContract {
     }
 
     pub resource AdminMintedCollection : QueryMintedCollection {
-        pub let groupMetadata : {String : MoonNFTMetadata}
-        pub let groupNftIds : { String : [UInt64] }
+        pub let groupMetadata : {String : MoonNftData}
+        pub let groupNftIds : { String : {UInt64 : UInt64} }
         pub let nfts : @{ UInt64 : MoonNFT }
-        pub let nftIds : [MoonNFTMetadata]
 
         pub let creatorToGroupMap : { String : String}
         pub let creatorProfileToGroupMap : { String : String }
@@ -393,23 +422,22 @@ pub contract TheMoonNFTContract {
             self.groupMetadata = {}
             self.groupNftIds = {}
             self.nfts <- {}
-            self.nftIds = []
 
             self.creatorToGroupMap = {}
             self.creatorProfileToGroupMap = {}
         }
 
-        pub fun depositGroup(_ groupId: String, _ groupMetadata: MoonNFTMetadata, _ nfts: @[MoonNFT]){
+        pub fun depositGroup(_ groupId: String, _ groupMetadata: MoonNftData, _ nfts: @[MoonNFT]){
             pre {
                 nfts.length > 0 : "No NFT's to deposit"
             }
 
             self.groupMetadata[groupId] = groupMetadata
-            var nftIds : [UInt64] = []
+            var nftIds : {UInt64 : UInt64} = {}
 
             while nfts.length > 0 {
                 let nft <- nfts.removeLast()
-                nftIds.append(nft.id)
+                nftIds.insert(key: nft.id, nft.id);
 
                 let nullNft <- self.nfts.insert(key: nft.id, <- nft)
 
@@ -444,12 +472,29 @@ pub contract TheMoonNFTContract {
             }
 
             let nftIdGroup = self.groupNftIds[groupId]!
+            let nftIds = nftIdGroup.keys
 
             return NftGroupData(
                 groupId,
-                nftIdGroup,
+                nftIds,
                 self.groupMetadata[groupId]!
             )
+        }
+
+        pub fun pickNfts(_ groupIds: [String]) : @[MoonNFT]{
+            let pickedNfts : @[MoonNFT] <- []
+
+            while groupIds.length > 0 {
+                let groupId = groupIds.removeFirst()
+                let nftIds = self.groupNftIds[groupId] ?? panic("Group with Id ".concat(groupId).concat(" does not exist"))
+
+                let nftId = nftIds.remove(key: nftIds.keys[0])!
+                // remove the nft Id from the group so that we know it no longer exists in this grouping
+                let nft <- self.nfts.remove(key: nftId)!
+                pickedNfts.append(<- nft)
+            }
+
+            return <- pickedNfts
         }
 
         destroy () {
@@ -460,9 +505,9 @@ pub contract TheMoonNFTContract {
     pub struct NftGroupData {
         pub let groupId : String
         pub let nftIds : [UInt64]
-        pub let metadata : MoonNFTMetadata
+        pub let metadata : MoonNftData
 
-        init (_ groupId: String, _ nftIds: [UInt64], _ metadata: MoonNFTMetadata) {
+        init (_ groupId: String, _ nftIds: [UInt64], _ metadata: MoonNftData) {
             self.groupId = groupId
             self.nftIds = nftIds
             self.metadata = metadata
