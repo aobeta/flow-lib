@@ -1,5 +1,6 @@
 import testScript from '../../cadence/transactions/mintMoonNFT.cdc';
 import getAdminMintedNFTGroupInfo from './getAdminMintedNFTGroupInfo';
+import getAllPacksForSale from './getAllPacksForSale';
 import getAllIds from './getIds';
 
 export function RunTestScript() {
@@ -8,6 +9,7 @@ export function RunTestScript() {
 
 export {
     getAdminMintedNFTGroupInfo,
+    getAllPacksForSale,
     getAllIds
 }
 // RunTestScript()

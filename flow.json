@@ -23,8 +23,8 @@
 			"hashAlgorithm": "SHA3_256"
 		},
 		"testnet-account": {
-			"address": "c875a14b59533028",
-			"keys": "8b1150fcfd1e2d75d4155f6e59c1f456d7efeefc5ad4b6137bcf833371953cd6",
+			"address": "bb3c82b2ee7557f4",
+			"keys": "ab8df7d41e0148f9ff25ae87fc9c0be9a97f05b638461a1e4ce8ece1d2a222c0",
 			"sigAlgorithm": "ECDSA_P256",
 			"hashAlgorithm": "SHA3_256"
 		}

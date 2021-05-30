@@ -1,6 +1,6 @@
 {
   "name": "@aobeta/flow-lib",
-  "version": "0.0.16",
+  "version": "0.0.18",
   "description": "Smart contracts for the moon platform",
   "repository": {
     "type": "git",
@@ -14,7 +14,8 @@
     "build:dev": "run-s clean pack:dev copy:package copy:README",
     "pack:dev": "webpack --mode=development",
     "pack": "webpack",
-    "compile": "tsc"
+    "compile": "tsc",
+    "build:publish": "npm run build; cd dist; npm publish; cd .."
   },
   "author": "Anthony Obeta",
   "license": "UNLICENSED",

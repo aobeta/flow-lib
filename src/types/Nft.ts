@@ -9,6 +9,7 @@ export interface MoonNftData {
 export interface MoonNftPackData {
     id? : number;
     previewMediaUrl: string;
+    description: string;
     collectionNftIds: number;
     creator: string;
     creatorProfile: string;

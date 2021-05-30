@@ -3,6 +3,7 @@ import TheMoonNFTContract from 0xf8d6e0586b0a20c7
 transaction (
     _ groupIds: [String],
     previewMediaUrl: String,
+    description: String,
     creator: String?,
     creatorProfile: String?
 ) {
@@ -30,6 +31,7 @@ transaction (
             0 as UInt64, // not used to create pack.
             [], // not used to create pack
             previewMediaUrl,
+            description: description,
             creator: creator,
             profile: creatorProfile
         )

@@ -44,6 +44,7 @@ pub contract TheMoonNFTContract {
         pub let id: UInt64
         pub let previewMediaUrl: String
         pub let collectionNftIds : [UInt64]
+        pub let description: String
         pub let creator: String?
         pub let creatorProfile: String?
 
@@ -51,14 +52,16 @@ pub contract TheMoonNFTContract {
             _ id: UInt64,
             _ nftIds: [UInt64],
             _ previewMediaUrl: String,
+            description: String,
             creator: String?,
-            profile: String?
+            profile: String?,
         ) {
             self.id = id
             self.creator = creator
             self.collectionNftIds = nftIds
             self.creatorProfile = profile
             self.previewMediaUrl = previewMediaUrl
+            self.description = description
         }
     }
 
@@ -98,7 +101,7 @@ pub contract TheMoonNFTContract {
         pub let id: UInt64
         pub let previewMediaUrl: String
         pub let pack : @[MoonNFT]
-
+        pub let description: String
         // made this optional in case we decide to mix nfts from different creators
         // into one pack
         pub let originalContentCreator: String?
@@ -109,6 +112,7 @@ pub contract TheMoonNFTContract {
             _ packId: UInt64,
             _ initialPack : @[MoonNFT],
             _ previewMediaUrl: String,
+            description: String,
             creator originalContentCreator : String?,
             creatorProfile: String?
         ) {
@@ -117,6 +121,7 @@ pub contract TheMoonNFTContract {
             self.creatorProfile = creatorProfile
             self.id = packId
             self.previewMediaUrl = previewMediaUrl
+            self.description = description
         }
 
         // TODO improve by generating the metadata in init, then storing as variable,
@@ -125,7 +130,7 @@ pub contract TheMoonNFTContract {
             let nftIds : [UInt64] = []
 
             var i = 0
-            while i <= self.pack.length {
+            while i < self.pack.length {
                 let nft <- self.pack.remove(at: i)
                 nftIds.append(nft.id)
                 self.pack.append(<- nft)
@@ -137,6 +142,7 @@ pub contract TheMoonNFTContract {
                 self.id,
                 nftIds,
                 self.previewMediaUrl,
+                description: self.description,
                 creator: self.originalContentCreator,
                 profile: self.creatorProfile)
         }
@@ -398,6 +404,7 @@ pub contract TheMoonNFTContract {
                 self.packIdCount,
                 <- packOfNfts,
                 data.previewMediaUrl,
+                description: data.description,
                 creator: data.creator,
                 creatorProfile: data.creatorProfile
             )

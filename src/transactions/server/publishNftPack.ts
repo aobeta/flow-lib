@@ -33,6 +33,7 @@ export default async function publishNftPack(
         fcl.args([
             fcl.arg(groupIds, t.Array(t.String)),
             fcl.arg(packData.previewMediaUrl, t.String),
+            fcl.arg(packData.description, t.String),
             fcl.arg(packData.creator, t.Optional(t.String)),
             fcl.arg(packData.creatorProfile, t.Optional(t.String))
         ]),
