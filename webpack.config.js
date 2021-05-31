@@ -4,7 +4,9 @@ const webpack = require('webpack');
 const serverConfig = {
   entry: {
       'scripts/index' : './src/scripts/index.ts',
-      'transactions/server/index' : './src/transactions/server/index.ts'
+      'user/index' : './src/user/index.ts',
+      'transactions/server/index' : './src/transactions/server/index.ts',
+      'transactions/client/index' : './src/transactions/client/index.ts',
   },
   target: 'node',
   module: {
@@ -54,11 +56,6 @@ const serverConfig = {
       type: "umd"
     },
   },
-  // plugins: [
-  //   new webpack.ProvidePlugin({
-  //       Buffer: ['buffer', 'Buffer'],
-  //   })
-  // ]
 };
 
 module.exports = [serverConfig]
