@@ -530,7 +530,7 @@ pub contract TheMoonNFTContract {
         self.SELLER_CATALOG_PATH = /public/SellerCatalog
         self.QUERY_MINTED_COLLECTION_PATH = /public/QueryMintedCollection
 
-        self.COLLECTION_STORAGE_PATH = /storage/NFTCollection
+        self.COLLECTION_STORAGE_PATH = /storage/MoonNFTCollection
         self.MINTER_STORAGE_PATH = /storage/NFTMinter
         self.SINGLE_PLATFORM_SELLER_PATH = /storage/PlatformSeller
         self.ADMIN_MINT_COLLECTION_PATH = /storage/AdminMintedCollection

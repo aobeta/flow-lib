@@ -12,7 +12,7 @@ export interface TransactionAccountDetails {
     keyId: number | null,
     sequenceNum: number | null,
     signature: string | null,
-    signingFunction: (data: TransactionData) => Pick<TransactionAccountDetails, 'addr' | 'keyId' | 'signature'>,
+    signingFunction: (data: TransactionData) => Pick<TransactionAccountDetails, 'addr' | 'keyId' | 'signature'> | Promise<Pick<TransactionAccountDetails, 'addr' | 'keyId' | 'signature'>>,
     resolve: null,
     role: {
         proposer: boolean,
@@ -46,4 +46,21 @@ export const buildAuthorization = (accountAddress: string, publicKeyId: number, 
         signature: signWithKey(data.message, privateKey),
       };
     },
-  });
+});
+
+export const buildAuthorizationClientSide = (accountAddress: string, publicKeyId: number, signFunction: (data: string) => Promise<string>) : (account: TransactionAccountDetails) => TransactionAccountDetails => (
+  account: TransactionAccountDetails,
+) => ({
+  ...account,
+    tempId: accountAddress,
+    addr: accountAddress,
+    keyId: publicKeyId,
+    resolve: null,
+    signingFunction: async (data: TransactionData) => {
+      return {
+        addr: accountAddress,
+        keyId: publicKeyId,
+        signature: await signFunction(data.message),
+      };
+    },
+})

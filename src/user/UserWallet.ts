@@ -1,5 +1,7 @@
 import * as fcl from "@onflow/fcl";
 import DeferredPromise from "../util/DeferredPromise";
+import initializeAccountTransaction from '../../cadence/transactions/initializeUserAccount.cdc';
+import { buildAuthorizationClientSide } from '../util/auth';
 
 interface WalletUser {
     addr: string | null;
@@ -14,6 +16,12 @@ const DEFAULT_WALLET_USER_STATE = {
     expiresAt: null,
     loggedIn: null,
 };
+
+interface PlatformAccountConfig {
+    platformAccount: string,
+    accountPublicKeyId: number,
+    signingFunction: (message: string) => Promise<string>;
+}
 
 export default class UserWallet {
     private user : WalletUser;
@@ -44,7 +52,7 @@ export default class UserWallet {
         if (!this.walletInitialized) {
             this.walletInitialized = true;
 
-            if (userInfo.addr !== this.walletAddress) {
+            if (this.walletAddress != null && userInfo.addr !== this.walletAddress) {
                 this.initializedDeferredPromise.reject("Wallet Address Mismatch");
             }
             else {
@@ -68,18 +76,64 @@ export default class UserWallet {
             .then((userInfo : WalletUser) => (userInfo.addr === this.walletAddress));
     }
 
-    async signUp () : Promise<WalletUser> {
+    async signUp (accountConfig: PlatformAccountConfig) : Promise<{ isInitialized: boolean; user: WalletUser}> {
         this.subscribeToUser();
-        return fcl.logIn();
+        await fcl.unauthenticate();
+        const userInfo = await fcl.logIn();
+        this.user = userInfo;
+
+        const returnData = {
+            user: userInfo,
+            isInitialized: false
+        };
+
+        if (this.isLoggedIn()) {
+            try {
+                console.log('about to initialize');
+                await this.initializeAccount(accountConfig);
+                return {
+                    ...returnData,
+                    isInitialized: true,
+                };
+            }
+            catch(error) {
+                console.error("INITIALIZE ERROR :: ", error);
+                return returnData;
+            }
+        }
+
+        return returnData;
     }
 
     isLoggedIn () {
-        console.log("user :: ", this.user);
         return this.user.loggedIn != null && this.user.loggedIn === true;
     }
 
-    linkMoonWallet () {
+    isUserWalletInitialized () {
+        // fcl.
+    }
 
+    /**
+     * Initializes a users account with the nft receiver so that they can receive NFT's
+     */
+    async initializeAccount (accountConfig: PlatformAccountConfig) {
+        const {
+            accountPublicKeyId,
+            platformAccount,
+            signingFunction
+        } = accountConfig;
+
+        const txId = await fcl.send([
+            fcl.transaction`${initializeAccountTransaction}`,
+            fcl.payer(buildAuthorizationClientSide(platformAccount, accountPublicKeyId, signingFunction)),
+            fcl.proposer(buildAuthorizationClientSide(platformAccount, accountPublicKeyId, signingFunction)),
+            fcl.authorizations([fcl.authz]),
+            fcl.limit(100)
+        ]);
+
+        console.log('transaction Id : ', txId);
+        const finishedTransaction = await fcl.tx(txId).onceSealed();
+        console.log('transaction : ', finishedTransaction);
     }
 }
 

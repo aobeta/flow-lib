@@ -15,6 +15,8 @@ export const initFlowConfig = (options: FlowConfig) => {
         .put("0xMOON_NFT_CONTRACT", options.contractAddress)
 }
 
+export { signWithKey } from '../../util/auth';
+
 export {
     mintMoonNft,
     publishNftPack
